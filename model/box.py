@@ -1,26 +1,63 @@
-from email.mime import image
-import tkinter as tk
+# import tkinter as tk
+from tkinter import Tk, Label, PhotoImage
 import os
 import copy
-import vars
-import computer_move
+try:
+    import vars
+except:
+    pass
+
+BOX_NUMBERER_VAR = 0
+
+# Tamaño del tablero
+BOARD_SIZE = 5
+
+# Controla los colores de los cuadrados
+boxColourList = ['gold', 'darkred']
+
+# Variables de clase
+piecesList = []
+
+# Referencias del tablero
+boxesList = []
+
+# Imagen para darle dimension a los box
+blank_box_widget_list = ['img/blankBox__Yo.png',
+                         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00O\x00\x00\x00N\x08\x03\x00\x00\x00V\xb6\xbb\x11\x00\x00\x00\x01sRGB\x00\xae\xce\x1c\xe9\x00\x00\x00\x04gAMA\x00\x00\xb1\x8f\x0b\xfca\x05\x00\x00\x00\x03PLTE\x00\x00\x00\xa7z=\xda\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\tpHYs\x00\x00\x17\x11\x00\x00\x17\x11\x01\xca&\xf3?\x00\x00\x00\x1dIDATXG\xed\xc11\x01\x00\x00\x00\xc2\xa0\xf5Om\x06\x7f \x00\x00\x00\x00\x00\x80K\r\x18`\x00\x018\x118\xb7\x00\x00\x00\x00IEND\xaeB`\x82']
+
+ENTIRE_BOARD_MATRIX = []
+CHECK_MATE_COLOUR = ['grey', 'grey']
+clickBoxColourList = ['khaki', 'darkmagenta']
+ENTIRE_BOARD_MATRIX = []
+SIDE_OF_WHITE = 0
+HORIZONTAL_VERTICAL_ARRANGEMENT_VAR = [0, 1, 0, 1][SIDE_OF_WHITE]
+ENTIRE_BOARD_MATRIX = []
+PIECES_ALIVE = [[], []]
+COLOUR_OF_COMPUTER = 0
+COMPUTER_PROCESSING_STATUS = 0
+NUMBER_OF_HUMAN_PLAYERS = 1
+clickBoxColourList = ['khaki', 'darkmagenta']
+if NUMBER_OF_HUMAN_PLAYERS == 1:
+    MOVE_TIME_INTERVAL = 1000
+else:
+    MOVE_TIME_INTERVAL = 10
 
 
-def piececode_to_board_matrix_position_converter(pieceCodeInput, BOARD_MATRIX_INPUT=vars.ENTIRE_BOARD_MATRIX):
+def piececode_to_board_matrix_position_converter(pieceCodeInput, BOARD_MATRIX_INPUT=ENTIRE_BOARD_MATRIX):
     """Funcion de apoyo para piececode_to_board_matrix_position_converter"""
     if pieceCodeInput != 6969:
         return int(
             8 * index_2d(BOARD_MATRIX_INPUT, pieceCodeInput)[0] + index_2d(BOARD_MATRIX_INPUT, pieceCodeInput)[1])
 
 
-def box_index_to_board_matrix_element_converter(index_in_box, ENTIRE_BOARD_MATRIX_INPUT=vars.ENTIRE_BOARD_MATRIX):
+def box_index_to_board_matrix_element_converter(index_in_box, ENTIRE_BOARD_MATRIX_INPUT=ENTIRE_BOARD_MATRIX):
     """Funcion de apoyo para simple_possible_destination_giver"""
     return ENTIRE_BOARD_MATRIX_INPUT[index_in_box // 8][index_in_box % 8]
 
 
 def like_coloured_piececode_list_spitter(pieceCode):
     """Funcion de apoyo para simple_possible_destination_giver"""
-    if vars.piecesList[pieceCode].colour == vars.piecesList[8].colour:
+    if piecesList[pieceCode].colour == piecesList[8].colour:
         return list(range(16))
     else:
         return list(range(16, 32))
@@ -44,32 +81,32 @@ def pieceCodeToPositionConverterMainBoard(pieceCodeInput):
     # use piececode_to_board_matrix_position_converter from now on
     """Funcion de apoyo para check_or_checkmate_checker_box_colourer"""
     if pieceCodeInput != 6969:
-        return int(8 * vars.piecesList[pieceCodeInput].column + vars.piecesList[pieceCodeInput].row)
+        return int(8 * piecesList[pieceCodeInput].column + piecesList[pieceCodeInput].row)
 
 
 def widget_colourer_and_bg_colour_attribute_setter(class_instance, colour):
     """Funcion de apoyo para check_or_checkmate_checker_box_colourer"""
-    if class_instance in vars.piecesList:
+    if class_instance in piecesList:
         class_instance.widget.config(bg=colour)
-        vars.boxesList[pieceCodeToPositionConverterMainBoard(
-            vars.piecesList.index(class_instance))].widget.config(bg=colour)
-        vars.boxesList[pieceCodeToPositionConverterMainBoard(
-            vars.piecesList.index(class_instance))].bg_colour = colour
+        boxesList[pieceCodeToPositionConverterMainBoard(
+            piecesList.index(class_instance))].widget.config(bg=colour)
+        boxesList[pieceCodeToPositionConverterMainBoard(
+            piecesList.index(class_instance))].bg_colour = colour
     else:
         class_instance.widget.config(bg=colour)
         class_instance.bg_colour = colour
         if class_instance.piece_contained < 6969:
-            vars.piecesList[class_instance.piece_contained].widget.config(
+            piecesList[class_instance.piece_contained].widget.config(
                 bg=colour)
 
 
-def check_checker(king_colour_input, INPUT_BOARD_MATRIX=vars.ENTIRE_BOARD_MATRIX):
+def check_checker(king_colour_input, INPUT_BOARD_MATRIX=ENTIRE_BOARD_MATRIX):
     TEMP_BOARD_MATRIX = copy.deepcopy(INPUT_BOARD_MATRIX)
     king_piece_code = king_code(king_colour_input)
     king_position = index_2d(TEMP_BOARD_MATRIX, king_piece_code)
     for type_looper, piece_looper in enumerate(list(i + [0, 6][king_colour_input] for i in range(32, 38))):
         TEMP_BOARD_MATRIX[king_position[0]][king_position[1]] = piece_looper
-        if type_looper in [vars.piecesList[TEMP_BOARD_MATRIX[i // 8][i % 8]].typeCode for i in simple_possible_destination_giver(piece_looper, TEMP_BOARD_MATRIX, 1) if TEMP_BOARD_MATRIX[i // 8][i % 8] != 6969]:
+        if type_looper in [piecesList[TEMP_BOARD_MATRIX[i // 8][i % 8]].typeCode for i in simple_possible_destination_giver(piece_looper, TEMP_BOARD_MATRIX, 1) if TEMP_BOARD_MATRIX[i // 8][i % 8] != 6969]:
 
             return 1
     return 0
@@ -80,9 +117,9 @@ def check_or_checkmate_checker_box_colourer(piece_moved_input):
         truth_value = bool(0)
         for opp_piece in PIECES_ALIVE[not i]:
             if pieceCodeToPositionConverterMainBoard(king_code(i)) in simple_possible_destination_giver(opp_piece):
-                widget_colourer_and_bg_colour_attribute_setter(vars.piecesList[king_code(i)], vars.check_colour[
-                    vars.boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
-                vars.piecesList[king_code(i)].checkState = 1
+                widget_colourer_and_bg_colour_attribute_setter(piecesList[king_code(i)],  check_colour[
+                    boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
+                piecesList[king_code(i)].checkState = 1
                 truth_value = 1
                 check_mate_checker = 1
                 for piece in PIECES_ALIVE[i]:
@@ -93,30 +130,30 @@ def check_or_checkmate_checker_box_colourer(piece_moved_input):
                     global CHECK_MATE_STATUS
                     CHECK_MATE_STATUS = 1
                     widget_colourer_and_bg_colour_attribute_setter(
-                        vars.piecesList[king_code(i)], vars.CHECK_MATE_COLOUR[i])
+                        piecesList[king_code(i)],  CHECK_MATE_COLOUR[i])
                     break
                 break
         if truth_value == 0:
             if piece_moved_input != king_code(i):
-                widget_colourer_and_bg_colour_attribute_setter(vars.piecesList[king_code(i)], vars.boxColourList[
-                    vars.boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
+                widget_colourer_and_bg_colour_attribute_setter(piecesList[king_code(i)],  boxColourList[
+                    boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
             else:
-                widget_colourer_and_bg_colour_attribute_setter(vars.boxesList[LAST_MOVE[-1][1]],
-                                                               vars.clickBoxColourList[vars.boxesList[LAST_MOVE[-1][1]].colour])
-                widget_colourer_and_bg_colour_attribute_setter(vars.piecesList[king_code(i)], vars.clickBoxColourList[
-                    vars.boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
-            vars.piecesList[king_code(i)].checkState = 0
+                widget_colourer_and_bg_colour_attribute_setter(boxesList[LAST_MOVE[-1][1]],
+                                                               clickBoxColourList[boxesList[LAST_MOVE[-1][1]].colour])
+                widget_colourer_and_bg_colour_attribute_setter(piecesList[king_code(i)],  clickBoxColourList[
+                    boxesList[pieceCodeToPositionConverterMainBoard(king_code(i))].colour])
+            piecesList[king_code(i)].checkState = 0
 
 
-def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=vars.ENTIRE_BOARD_MATRIX, killer_pawn_move_input=0):
+def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=ENTIRE_BOARD_MATRIX, killer_pawn_move_input=0):
     if pieceCodeInput < 6969:
         possibleDestinations = []
         rookBishopQueenTypeCodeList = [0, 2, 3]
-        if vars.piecesList[pieceCodeInput].typeCode in rookBishopQueenTypeCodeList:
+        if piecesList[pieceCodeInput].typeCode in rookBishopQueenTypeCodeList:
             # rook, bishop, queen
             unitVectorList = [[[0, 1], [0, -1], [1, 0], [-1, 0]], [[1, 1], [1, -1], [-1, 1], [-1, -1]],
                               [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]]
-            for v in unitVectorList[rookBishopQueenTypeCodeList.index(vars.piecesList[pieceCodeInput].typeCode)]:
+            for v in unitVectorList[rookBishopQueenTypeCodeList.index(piecesList[pieceCodeInput].typeCode)]:
                 for i in range(7):
                     # change this into a while loop
                     position = 8 * (index_2d(
@@ -136,7 +173,7 @@ def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=
                         break
                     else:
                         break
-        elif vars.piecesList[pieceCodeInput].typeCode == 1:
+        elif piecesList[pieceCodeInput].typeCode == 1:
             # knight
             positionCheckerIndexList = [[1, -1], [2, -2]]
             for a in positionCheckerIndexList[0]:
@@ -152,7 +189,7 @@ def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=
                                 pieceCodeInput):
                             possibleDestinations.append(
                                 8 * position[0] + position[1])
-        elif vars.piecesList[pieceCodeInput].typeCode == 4:
+        elif piecesList[pieceCodeInput].typeCode == 4:
             # king
             unitVectorList = [[0, 1], [0, -1], [1, 0],
                               [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
@@ -166,33 +203,33 @@ def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=
                                                                            ENTIRE_BOARD_MATRIX_INPUT) not in like_coloured_piececode_list_spitter(
                         pieceCodeInput):
                     possibleDestinations.append(position)
-        elif vars.piecesList[pieceCodeInput].typeCode == 5:
+        elif piecesList[pieceCodeInput].typeCode == 5:
             # pawn
             pawnDirectionList = [1, -1]
-            pawnDirection = pawnDirectionList[vars.piecesList[pieceCodeInput].colour]
+            pawnDirection = pawnDirectionList[piecesList[pieceCodeInput].colour]
             pawnLongitudnalCoordinate = [index_2d(ENTIRE_BOARD_MATRIX_INPUT, pieceCodeInput)[1],
                                          index_2d(ENTIRE_BOARD_MATRIX_INPUT, pieceCodeInput)[0]][
-                vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
+                HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
             pawnLateralCoordinate = [index_2d(ENTIRE_BOARD_MATRIX_INPUT, pieceCodeInput)[0],
                                      index_2d(ENTIRE_BOARD_MATRIX_INPUT, pieceCodeInput)[1]][
-                vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
+                HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
             if killer_pawn_move_input == 0:
                 position = piececode_to_board_matrix_position_converter(pieceCodeInput,
                                                                         ENTIRE_BOARD_MATRIX_INPUT) + pawnDirection * [1, 8][
-                    vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
+                    HORIZONTAL_VERTICAL_ARRANGEMENT_VAR]
                 if pawnLongitudnalCoordinate + pawnDirection * 1 in range(
                         8) and box_index_to_board_matrix_element_converter(position,
                                                                            ENTIRE_BOARD_MATRIX_INPUT) == 6969:
                     possibleDestinations.append(position)
 
-                    if vars.piecesList[pieceCodeInput].movesPlayedByPiece == 0 and box_index_to_board_matrix_element_converter(position + pawnDirection * [1, 8][vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR], ENTIRE_BOARD_MATRIX_INPUT) == 6969:
+                    if piecesList[pieceCodeInput].movesPlayedByPiece == 0 and box_index_to_board_matrix_element_converter(position + pawnDirection * [1, 8][HORIZONTAL_VERTICAL_ARRANGEMENT_VAR], ENTIRE_BOARD_MATRIX_INPUT) == 6969:
                         possibleDestinations.append(
-                            position + pawnDirection * [1, 8][vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR])
+                            position + pawnDirection * [1, 8][HORIZONTAL_VERTICAL_ARRANGEMENT_VAR])
 
             pawnColumnMovementList = [1, -1]
             for n in pawnColumnMovementList:
-                position = [8, 1][vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR] * (pawnLateralCoordinate + n) + [1, 8][
-                    vars.HORIZONTAL_VERTICAL_ARRANGEMENT_VAR] * (pawnLongitudnalCoordinate + pawnDirection)
+                position = [8, 1][HORIZONTAL_VERTICAL_ARRANGEMENT_VAR] * (pawnLateralCoordinate + n) + [1, 8][
+                    HORIZONTAL_VERTICAL_ARRANGEMENT_VAR] * (pawnLongitudnalCoordinate + pawnDirection)
                 if pawnLongitudnalCoordinate + pawnDirection in range(8) and pawnLateralCoordinate + n in range(
                         8) and box_index_to_board_matrix_element_converter(position, ENTIRE_BOARD_MATRIX_INPUT) != 6969 and piecesList[box_index_to_board_matrix_element_converter(position, ENTIRE_BOARD_MATRIX_INPUT)].colour != piecesList[pieceCodeInput].colour:
                     possibleDestinations.append(position)
@@ -200,7 +237,7 @@ def simple_possible_destination_giver(pieceCodeInput, ENTIRE_BOARD_MATRIX_INPUT=
         return set(possibleDestinations)
 
 
-def final_destination_giver(piece_code_input, INPUT_BOARD_MATRIX=vars.ENTIRE_BOARD_MATRIX, INPUT_PIECES_ALIVE=vars.PIECES_ALIVE):
+def final_destination_giver(piece_code_input, INPUT_BOARD_MATRIX=ENTIRE_BOARD_MATRIX, INPUT_PIECES_ALIVE=PIECES_ALIVE):
     TEMP_BOARD_MATRIX = copy.deepcopy(INPUT_BOARD_MATRIX)
 
     initially_allowed_boxes = simple_possible_destination_giver(
@@ -211,7 +248,7 @@ def final_destination_giver(piece_code_input, INPUT_BOARD_MATRIX=vars.ENTIRE_BOA
     piece_code_input_postion = index_2d(
         TEMP_BOARD_MATRIX, piece_code_input)
 
-    king_colour_to_check = vars.PiecesList[piece_code_input].colour
+    king_colour_to_check = PiecesList[piece_code_input].colour
 
     for destination in initially_allowed_boxes:
         piece_at_destination = TEMP_BOARD_MATRIX[destination //
@@ -234,16 +271,16 @@ def final_destination_giver(piece_code_input, INPUT_BOARD_MATRIX=vars.ENTIRE_BOA
 
 def widget_highlight_remover(class_instance):
     """Funcion de apoyo para Boxes.pieceTeleporter_or_box_click_func"""
-    if class_instance in vars.piecesList:
+    if class_instance in piecesList:
         class_instance.widget.config(
-            bg=vars.boxesList[pieceCodeToPositionConverterMainBoard(class_instance.pieceCode)].bg_colour)
-        vars.boxesList[pieceCodeToPositionConverterMainBoard(
+            bg=boxesList[pieceCodeToPositionConverterMainBoard(class_instance.pieceCode)].bg_colour)
+        boxesList[pieceCodeToPositionConverterMainBoard(
             class_instance.pieceCode)].widget.config(
-            bg=vars.boxesList[pieceCodeToPositionConverterMainBoard(class_instance.pieceCode)].bg_colour)
+            bg=boxesList[pieceCodeToPositionConverterMainBoard(class_instance.pieceCode)].bg_colour)
     elif class_instance.piece_contained == 6969:
         class_instance.widget.config(bg=class_instance.bg_colour)
     else:
-        vars.piecesList[class_instance.piece_contained].widget.config(
+        piecesList[class_instance.piece_contained].widget.config(
             bg=class_instance.bg_colour)
         class_instance.widget.config(bg=class_instance.bg_colour)
 
@@ -261,23 +298,28 @@ def computer_piece_mover(list_w_piece_code_and_final_position):
         global PIECE_CLICK_VAR
         PIECE_CLICK_VAR = computer_move_piece_code
 
-        if vars.boxesList[final_position].colour_occupied == 3:
-            vars.boxesList[final_position].pieceTeleporter_or_box_click_func(
+        if boxesList[final_position].colour_occupied == 3:
+            boxesList[final_position].pieceTeleporter_or_box_click_func(
                 '<Key>')
         else:
-            vars.piecesList[vars.boxesList[final_position].piece_contained].clickFunc(
+            piecesList[boxesList[final_position].piece_contained].clickFunc(
                 '<Key>')
 
 # La clase Box hereda de Label
 
 
-class Box (tk.Label):
+boxColourList = ['gold', 'darkred']
+blank_box_widget_list = ['img/blankBox__Yo.png',
+                         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00O\x00\x00\x00N\x08\x03\x00\x00\x00V\xb6\xbb\x11\x00\x00\x00\x01sRGB\x00\xae\xce\x1c\xe9\x00\x00\x00\x04gAMA\x00\x00\xb1\x8f\x0b\xfca\x05\x00\x00\x00\x03PLTE\x00\x00\x00\xa7z=\xda\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\tpHYs\x00\x00\x17\x11\x00\x00\x17\x11\x01\xca&\xf3?\x00\x00\x00\x1dIDATXG\xed\xc11\x01\x00\x00\x00\xc2\xa0\xf5Om\x06\x7f \x00\x00\x00\x00\x00\x80K\r\x18`\x00\x018\x118\xb7\x00\x00\x00\x00IEND\xaeB`\x82']
+
+
+class Box (Label):
     '''Clase que nos permite representar un cuadrado en el tablero'''
 
     def __init__(self, widget, column, row, colour, colour_occupied=3, piece_contained=6969):
         # Resctamos la variables
-        colour = vars.boxColourList[colour]
-        image = tk.PhotoImage(file=vars.blank_box_widget_list[0])
+        colour = boxColourList[colour]
+        image = PhotoImage(file=blank_box_widget_list[0])
 
         # Configuramos el objeto padre
         super().__init__(widget, bg=colour, image=image)
@@ -297,64 +339,70 @@ class Box (tk.Label):
     def pieceTeleporter_or_box_click_func(self, event, victimCode=6969):
         '''Funcion que permite mover'''
         global PIECE_CLICK_VAR, MOVES_PLAYED, LAST_MOVE, PIECES_ALIVE
-        if PIECE_CLICK_VAR < 6969 and vars.boxesList.index(self) in final_destination_giver(PIECE_CLICK_VAR) and victimCode == 6969 or PIECE_CLICK_VAR < 6969 and pieceCodeToPositionConverterMainBoard(victimCode) in final_destination_giver(PIECE_CLICK_VAR):
+        if PIECE_CLICK_VAR < 6969 and boxesList.index(self) in final_destination_giver(PIECE_CLICK_VAR) and victimCode == 6969 or PIECE_CLICK_VAR < 6969 and pieceCodeToPositionConverterMainBoard(victimCode) in final_destination_giver(PIECE_CLICK_VAR):
             for i in final_destination_giver(PIECE_CLICK_VAR):
-                if i != vars.boxesList.index(self):
-                    widget_highlight_remover(vars.boxesList[i])
+                if i != boxesList.index(self):
+                    widget_highlight_remover(boxesList[i])
             if MOVES_PLAYED > 0:
-                widget_colourer_and_bg_colour_attribute_setter(vars.boxesList[LAST_MOVE[-1][1]],
-                                                               vars.boxColourList[vars.boxesList[LAST_MOVE[-1][1]].colour])
-                widget_colourer_and_bg_colour_attribute_setter(vars.PiecesList[LAST_MOVE[-1][0]],
-                                                               vars.boxColourList[vars.boxesList[LAST_MOVE[-1][2]].colour])
+                widget_colourer_and_bg_colour_attribute_setter(boxesList[LAST_MOVE[-1][1]],
+                                                               boxColourList[boxesList[LAST_MOVE[-1][1]].colour])
+                widget_colourer_and_bg_colour_attribute_setter(piecesList[LAST_MOVE[-1][0]],
+                                                               boxColourList[boxesList[LAST_MOVE[-1][2]].colour])
 
-            vars.boxesList[pieceCodeToPositionConverterMainBoard(
+            boxesList[pieceCodeToPositionConverterMainBoard(
                 PIECE_CLICK_VAR)].colour_occupied = 3
-            vars.ENTIRE_BOARD_MATRIX[vars.boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].column][
-                vars.boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].row] = 6969
-            vars.boxesList[pieceCodeToPositionConverterMainBoard(
+            ENTIRE_BOARD_MATRIX[boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].column][
+                boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].row] = 6969
+            boxesList[pieceCodeToPositionConverterMainBoard(
                 PIECE_CLICK_VAR)].piece_contained = 6969
             self.piece_contained = PIECE_CLICK_VAR
-            vars.boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].widget.config(
-                bg=vars.clickBoxColourList[(vars.boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].colour)])
+            boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].widget.config(
+                bg=clickBoxColourList[(boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].colour)])
             LAST_MOVE.append([PIECE_CLICK_VAR, pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR),
                               8 * self.column + self.row])
-            vars.PiecesList[PIECE_CLICK_VAR].column = self.column
-            vars.PiecesList[PIECE_CLICK_VAR].row = self.row
+            piecesList[PIECE_CLICK_VAR].column = self.column
+            piecesList[PIECE_CLICK_VAR].row = self.row
 
-            widget_colourer_and_bg_colour_attribute_setter(vars.PiecesList[PIECE_CLICK_VAR], vars.clickBoxColourList[
-                vars.boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].colour])
+            widget_colourer_and_bg_colour_attribute_setter(piecesList[PIECE_CLICK_VAR],  clickBoxColourList[
+                boxesList[pieceCodeToPositionConverterMainBoard(PIECE_CLICK_VAR)].colour])
 
-            vars.PiecesList[PIECE_CLICK_VAR].widget.grid(
+            piecesList[PIECE_CLICK_VAR].widget.grid(
                 row=self.row, column=self.column)
-            vars.PiecesList[PIECE_CLICK_VAR].movesPlayedByPiece += 1
-            self.colour_occupied = int(vars.PiecesList[PIECE_CLICK_VAR].colour)
-            vars.ENTIRE_BOARD_MATRIX[self.column][self.row] = vars.PiecesList[PIECE_CLICK_VAR].pieceCode
+            piecesList[PIECE_CLICK_VAR].movesPlayedByPiece += 1
+            self.colour_occupied = int(PiecesList[PIECE_CLICK_VAR].colour)
+            ENTIRE_BOARD_MATRIX[self.column][self.row] = PiecesList[PIECE_CLICK_VAR].pieceCode
             MOVES_PLAYED += 1
 
             check_or_checkmate_checker_box_colourer(PIECE_CLICK_VAR)
             PIECE_CLICK_VAR = 6969
-            if which_side_move() == vars.COLOUR_OF_COMPUTER and vars.NUMBER_OF_HUMAN_PLAYERS == 1 or vars.NUMBER_OF_HUMAN_PLAYERS == 0 and CHECK_MATE_STATUS == 0:
+            if which_side_move() == COLOUR_OF_COMPUTER and NUMBER_OF_HUMAN_PLAYERS == 1 or vars.NUMBER_OF_HUMAN_PLAYERS == 0 and CHECK_MATE_STATUS == 0:
                 global COMPUTER_PROCESSING_STATUS
                 COMPUTER_PROCESSING_STATUS = 1
                 os.sleep(0.005)
-                self.gameWindow.after(vars.MOVE_TIME_INTERVAL,
-                                 lambda: computer_piece_mover(computer_move.computer_move_spitter()))
+                self.gameWindow.after(MOVE_TIME_INTERVAL,
+                                      lambda: computer_piece_mover(computer_move.computer_move_spitter()))
 
         elif self.piece_contained != 6969:
-            vars.piecesList[self.piece_contained].clickFunc(event)
+            piecesList[self.piece_contained].clickFunc(event)
 
     def cursorHighlighter(self, event=None):
         if self.piece_contained != 6969:
-            vars.piecesList[self.piece_contained].cursorHighlighter(event)
+            piecesList[self.piece_contained].cursorHighlighter(event)
 
     def cursorHighlightRemover(self, event=None):
         if self.piece_contained != 6969:
-            vars.piecesList[self.piece_contained].cursorHighlightRemover(event)
+            piecesList[self.piece_contained].cursorHighlightRemover(event)
 
 
 if __name__ == "__main__":
-    # gameWindow = tk.Tk()
-    # gameWindow.resizable(0, 0)
-    # lista = boardConstructor(gameWindow)
-    # gameWindow.mainloop()
-    pass
+    gameWindow = Tk()
+    gameWindow.resizable(0, 0)
+
+    for r in range(5):
+        for c in range(5):
+
+            # Se instancia el cuadrado. nota: Box recibe el componente padre, fila, columna, y un valor de 0(dorado) y 1(rojo oscuro)
+            box = Box(gameWindow, r, c, (r + c) % 2)
+            # boxesList.append(box)
+            box.grid(row=r, column=c)
+    gameWindow.mainloop()
