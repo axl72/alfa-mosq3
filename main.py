@@ -399,10 +399,11 @@ class Box (tk.Label):
     def clickFunc(self, event):
         global PIECE_CLICKED
         PIECE_CLICKED = self.cordenadas
-        if self.piece_contained != -1:
-            pass
+        if self.piece_contained == -1 and not ID_JUGADOR_JUGANDO[0]:
+            siguienteTurno(boxesMatrix, piecesMatrix,
+                           ID_JUGADOR_JUGANDO, PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
         else:
-            print("No hay pieza para jugar")
+            print("No hay ficha para hola comer")
 
 
 gameWindow = Tk()
@@ -437,18 +438,31 @@ class Piece(Label):
 
     def comerPieza(self, cordenada):
         x, y = cordenada
+        x0, y0 = self.cordenandas
         # print("El comio {} a {}".format(self.tipo, piecesMatrix[x][y].tipo))
         piecesMatrix[x][y].grid_forget()
-        x0, y0 = self.cordenandas
         piecesMatrix[x][y] = piecesMatrix[x0][y0]
         piecesMatrix[x0][y0] = None
         self.cordenandas = cordenada
         self.grid_forget()
         self.grid(row=x, column=y)
         self.config(bg=boxesMatrix[x][y].colour)
-        boxesMatrix[x][y].piece_contained = -1
+        boxesMatrix[x][y].piece_contained = 1
         boxesMatrix[x0][y0].piece_contained = -1
 
+    def moverPieza(self, cordenada):
+        x, y = cordenada
+        x0, y0 = self.cordenandas
+        self.grid_forget()
+        piecesMatrix[x][y] = piecesMatrix[x0][y0]
+        piecesMatrix[x0][y0] = None
+        self.config(bg=boxesMatrix[x][y].colour)
+        self.grid(row=x, column=y)
+        self.cordenandas = cordenada
+        boxesMatrix[x][y].piece_contained = 0
+        boxesMatrix[x0][y0].piece_contained = -1
+
+        # print("Nos quisimos mover a {}".format(cordenada))
         # mostrarJugadas
 
 
