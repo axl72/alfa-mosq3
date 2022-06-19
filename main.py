@@ -1,9 +1,5 @@
 # import tkinter as tk
-from email.mime import image
-from tkinter import Tk, Label, PhotoImage
 import tkinter as tk
-import os
-import copy
 from controller.motion import pieces_movement, siguienteTurno
 from view.constructors import boarConstructor, piecesConstructor
 
@@ -12,13 +8,23 @@ BOX_NUMBERER_VAR = 0
 global piecesMatrix
 global boxesMatrix
 
+# Ventana de juego
+gameWindow = tk.Tk()
+
+# Imagenes precargadas de las fichas
+img = {"mosquetero": tk.PhotoImage(file="img/musketeer.png"),
+       "guardian": tk.PhotoImage(file="img/guardian.png")}
+
 # Tamaño del tablero
 BOARD_SIZE = 5
 
 # Controla los colores de los cuadrados
 boxColourList = ['gold', 'darkred']
 
+# Lista de posibles movimientos, se llena cuando se selecciona una pieza
 POSIBLES_MOVIMIENTOS = []
+
+# Numero de jugadores
 NUMBER_OF_HUMAN_PLAYERS = 1
 
 # Cuando marca 1 juegan los mosqueteros, en caso contrario juegan los guardianes
@@ -30,11 +36,8 @@ if NUMBER_OF_HUMAN_PLAYERS == 1:
 else:
     MOVE_TIME_INTERVAL = 10
 
-
+# Imagen con la dimension para las casillas
 blank_box_widget_list = 'img/blankBox__Yo.png'
-
-
-# La clase Box hereda de Label
 
 
 class Box (tk.Label):
@@ -71,14 +74,7 @@ class Box (tk.Label):
             print("No hay ficha para hola comer")
 
 
-gameWindow = Tk()
-
-
-img = {"mosquetero": PhotoImage(file="img/musketeer.png"),
-       "guardian": PhotoImage(file="img/guardian.png")}
-
-
-class Piece(Label):
+class Piece(tk.Label):
     def __init__(self, widget, tipo, cordenadas=(-1, -1), colour=None, box=(-1, -1)):
         self.cordenandas = cordenadas
         # El atributo tipo es dato un binario que represeta 1 (True) cuando es un mosquetero o 0 (False) cuando es un guardian
