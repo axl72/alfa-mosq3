@@ -20,7 +20,7 @@ def obtenerCordenadasFrontales(cordendas):
 
 
 def obtenerCordenadasPosibles(boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas):
-    """Esta funcion recibe la cordenada del tablero seleccionada para iniciar una jugada, retornar una lista de cordenadas posibles a donde moverse"""
+    """Esta funcion recibe la cordenada del tablero seleccionada para iniciar una jugada, retornar una lista de cordenadas posibles a donde moverse en base al tipo de ficha"""
 
     size = len(boxesMatrix) - 1
 
@@ -41,12 +41,7 @@ def obtenerCordenadasPosibles(boxesMatrix, piecesMatrix, juega_mosquetero, corde
     for z in cordenadasFrontales:
         x, y = z
         codigo_pieza = boxesMatrix[x][y].piece_contained
-        # Si la casilla donde queremos movernos contiene una ficha, es decir si el codigo de pieza contenida es diferente de -1
         if juega_mosquetero[0]:
-            # Si las cordenadas posibles de movimiento son diferentes a la clase de jugador que esta jugando es un movimiento valido
-            # Es decir, si juega mosquetero y nos queremos mover a la casilla de un guardian, es correctoa != -1:
-            # print("{} != {} | Resultado: {}".format(codigo_pieza,
-            #                                         juega_mosquetero, codigo_pieza != juega_mosquetero[0]))
             if codigo_pieza == 0:
                 cordenadasValidadas.append(z)
         else:
@@ -100,7 +95,6 @@ def siguienteTurno(boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas, pres
     if cordenadas_posibles == []:
         print("No hay jugadas posibles para esta ficha")
         return
-    # print(cordenadas_posibles)
 
     for z in cordenadas_posibles.copy():
         preseleccion.append(z)
