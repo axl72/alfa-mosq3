@@ -1,4 +1,5 @@
 # import tkinter as tk
+from email.mime import image
 from tkinter import Tk, Label, PhotoImage
 import tkinter as tk
 import os
@@ -424,15 +425,29 @@ class Piece(Label):
         global PIECE_CLICKED
 
         PIECE_CLICKED = self.cordenandas
-        print("Cordenada seleccionada: {}".format(PIECE_CLICKED))
+        # print("Cordenada seleccionada: {}".format(PIECE_CLICKED))
         #x, y = self.cordenandas
         # print(piecesMatrix[x][y].tipo)
         #piecesMatrix[x][y].config(bg = "white")
         # boxesMatrix[self.cordenandas[0]
         #            ][self.cordenandas[1]].config(bg="white")
-        if self.tipo == ID_JUGADOR_JUGANDO[0]:
+        if self.tipo == ID_JUGADOR_JUGANDO[0] or self.cordenandas in POSIBLES_MOVIMIENTOS:
             siguienteTurno(boxesMatrix, piecesMatrix, ID_JUGADOR_JUGANDO,
-                           self.cordenandas, POSIBLES_MOVIMIENTOS)
+                           PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
+
+    def comerPieza(self, cordenada):
+        x, y = cordenada
+        # print("El comio {} a {}".format(self.tipo, piecesMatrix[x][y].tipo))
+        piecesMatrix[x][y].grid_forget()
+        x0, y0 = self.cordenandas
+        piecesMatrix[x][y] = piecesMatrix[x0][y0]
+        piecesMatrix[x0][y0] = None
+        self.cordenandas = cordenada
+        self.grid_forget()
+        self.grid(row=x, column=y)
+        self.config(bg=boxesMatrix[x][y].colour)
+        boxesMatrix[x][y].piece_contained = -1
+        boxesMatrix[x0][y0].piece_contained = -1
 
         # mostrarJugadas
 
