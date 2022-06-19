@@ -1,5 +1,6 @@
-clickBoxColourList = ['khaki', 'darkmagenta']
-boxColourList = ['gold', 'darkred']
+clickBoxColourList = {'gold': 'khaki', 'darkred': 'darkmagenta'}
+boxColourList = ('gold', 'darkred')
+PIECE_CLICKED = (-1, -1)
 
 
 def suma_cartesiana(tupla1, tupla2):
@@ -44,7 +45,9 @@ def obtenerCordenadasPosibles(boxesMatrix, piecesMatrix, juega_mosquetero, corde
         if codigo_pieza != -1:
             # Si las cordenadas posibles de movimiento son diferentes a la clase de jugador que esta jugando es un movimiento valido
             # Es decir, si juega mosquetero y nos queremos mover a la casilla de un guardian, es correctoa != -1:
-            if codigo_pieza != juega_mosquetero:
+            print("{} == {} | Resultado: {}".format(codigo_pieza,
+                  juega_mosquetero, codigo_pieza == juega_mosquetero[0]))
+            if codigo_pieza != juega_mosquetero[0]:
                 cordenadasValidadas.append(z)
     return cordenadasValidadas
 
@@ -54,21 +57,41 @@ def pintarTablero(boxesMatrix, piecesMatrix, cordenadas, color=None):
     if color != None:
         for z in cordenadas:
             x, y = z
-            piecesMatrix[x][y].config(bg=color)
+            if piecesMatrix[x][y] != None:
+                piecesMatrix[x][y].config(bg=color)
             boxesMatrix[x][y].config(bg=color)
 
     else:
         for z in cordenadas:
             x, y = z
             color = boxesMatrix[x][y].colour
-            piecesMatrix[x][y].config(bg=color)
+            if piecesMatrix[x][y] != None:
+                piecesMatrix[x][y].config(bg=color)
             boxesMatrix[x][y].config(bg=color)
 
 
 def siguienteTurno(boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas, preseleccion):
+    # Si ya hemos elegido la ficha a mover y luego elegimos un movimiento valido
+    global PIECE_CLICKED
+    if cordenadas in preseleccion:
+        x, y = PIECE_CLICKED
+        cordenadas
+        piecesMatrix[x][y].comerPieza(cordenadas)
+        pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
+
+        # Esto se puede optimizar
+        while preseleccion != []:
+            preseleccion.pop()
+
+        # Dado el error 'referenced before assignment' la linea queda así
+        # Debería ser de esta forma 'return not juega_mosquetero'
+        # juega_mosquetero[0] = not juega_mosquetero[0]
+        return
+
     cordenadas_posibles = obtenerCordenadasPosibles(
         boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas)
-    print(preseleccion != [])
+
+    # print(cordenadas_posibles)
 
     for z in cordenadas_posibles.copy():
         preseleccion.append(z)
@@ -76,13 +99,12 @@ def siguienteTurno(boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas, pres
     if preseleccion != []:
         pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
     # else:
-    color = clickBoxColourList[1] if juega_mosquetero else clickBoxColourList[0]
+    x, y = cordenadas_posibles[0]
+    color = clickBoxColourList[boxesMatrix[x][y].colour]
     pintarTablero(boxesMatrix, piecesMatrix,
                   cordenadas_posibles, color)
 
-    # Dado el error 'referenced before assignment' la linea queda así
-    # Debería ser de esta forma 'return not juega_mosquetero'
-    #juega_mosquetero[0] = not juega_mosquetero[0]
+    PIECE_CLICKED = cordenadas
 
 
 def pieces_movement(matrix):
