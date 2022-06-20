@@ -4,8 +4,8 @@ alfa-mosq3 es un software que recrea gráficamente el tradicional juego de los t
 
 ## Tabla de contenido
 
-[1. Tres mosqueteros](#1-tres-mosqueteros)
-[2. Objetivo del juego](#2-objetivo-del-juego)
+[1. Tres mosqueteros](#1-tres-mosqueteros)\
+[2. Objetivo del juego](#2-objetivo-del-juego)\
 [3. Referencias](#3-referencias)
 ### 1. Tres mosqueteros
 El tradicional juego de los tres mosqueteros consiste en un tablero 5x5 donde existirán 3 piezas que se situaran en la diagonal derecha intercaladamente. El resto de fichas son guardianes.
