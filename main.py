@@ -39,6 +39,35 @@ else:
 # Imagen con la dimension para las casillas
 blank_box_widget_list = 'img/blankBox__Yo.png'
 
+estado_inicial = [
+    ['G', 'G', 'G', 'G', 'M'],
+    ['G', 'G', 'G', 'G', 'G'],
+    ['G', 'G', 'M', 'G', 'G'],
+    ['G', 'G', 'G', 'G', 'G'],
+    ['M', 'G', 'G', 'G', 'G']
+]
+
+
+class Tablero:
+    """Clase que nos permite representar abstractamente un tablero"""
+
+    def __init__(self, estado, mosqueteros, guardianes):
+        self.estado = estado
+        self.mosquetero = mosqueteros
+        self.guardianes = guardianes
+
+    def mover_pieza(self, origen, destino, maxmin):
+        if maxmin:
+            self.estado[origen[0]][origen[1]] = ' '
+            self.estado[destino[0]][destino[1]] = 'M'
+        else:
+            self.estado[origen[0]][origen[1]] = ' '
+            self.estado[destino[0]][destino[1]] = 'G'
+
+
+board = Tablero(estado=estado_inicial, mosqueteros=[
+                (0, 4), (2, 2), (4, 0)], guardianes=[])
+
 
 class Box (tk.Label):
     '''Clase que nos permite representar un cuadrado en el tablero'''
@@ -68,16 +97,16 @@ class Box (tk.Label):
         global PIECE_CLICKED
         PIECE_CLICKED = self.cordenadas
         if self.piece_contained == -1 and not ID_JUGADOR_JUGANDO[0]:
-            siguienteTurno(boxesMatrix, piecesMatrix,
+            siguienteTurno(board, boxesMatrix, piecesMatrix,
                            ID_JUGADOR_JUGANDO, PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
         else:
-            print("No hay ficha para hola comer")
+            print("No hay ficha para comer")
 
 
 class Piece(tk.Label):
     def __init__(self, widget, tipo, cordenadas=(-1, -1), colour=None, box=(-1, -1)):
-        self.cordenandas = cordenadas
         # El atributo tipo es dato un binario que represeta 1 (True) cuando es un mosquetero o 0 (False) cuando es un guardian
+        self.cordenandas = cordenadas
         self.tipo = True if tipo == "mosquetero" else False
         self.box = box
         super().__init__(widget, image=img[tipo], bg=boxColourList[colour])
@@ -87,23 +116,25 @@ class Piece(tk.Label):
 
         PIECE_CLICKED = self.cordenandas
         if self.tipo == ID_JUGADOR_JUGANDO[0] or self.cordenandas in POSIBLES_MOVIMIENTOS:
-            siguienteTurno(boxesMatrix, piecesMatrix, ID_JUGADOR_JUGANDO,
+            siguienteTurno(board, boxesMatrix, piecesMatrix, ID_JUGADOR_JUGANDO,
                            PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
 
     def comerPieza(self, cordenada):
+        """Acción de los mosqueteros"""
         x, y = cordenada
         x0, y0 = self.cordenandas
+        self.grid_forget()
         piecesMatrix[x][y].grid_forget()
         piecesMatrix[x][y] = piecesMatrix[x0][y0]
         piecesMatrix[x0][y0] = None
         self.cordenandas = cordenada
-        self.grid_forget()
         self.grid(row=x, column=y)
         self.config(bg=boxesMatrix[x][y].colour)
         boxesMatrix[x][y].piece_contained = 1
         boxesMatrix[x0][y0].piece_contained = -1
 
     def moverPieza(self, cordenada):
+        """Acctión de los guardianes"""
         x, y = cordenada
         x0, y0 = self.cordenandas
         self.grid_forget()
