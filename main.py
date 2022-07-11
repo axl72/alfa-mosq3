@@ -1,9 +1,10 @@
 # import tkinter as tk
 import tkinter as tk
+from turtle import pos
 from controller.motion import pieces_movement, siguienteTurno
+from controller.util import obtenerCordenadasPosibles
 from view.constructors import boarConstructor, piecesConstructor
-
-
+from copy import deepcopy
 BOX_NUMBERER_VAR = 0
 global piecesMatrix
 global boxesMatrix
@@ -25,7 +26,7 @@ boxColourList = ['gold', 'darkred']
 POSIBLES_MOVIMIENTOS = []
 
 # Numero de jugadores
-NUMBER_OF_HUMAN_PLAYERS = 1
+NUMBER_OF_HUMAN_PLAYERS = 2
 
 # Cuando marca 1 juegan los mosqueteros, en caso contrario juegan los guardianes
 # Esta variable debería ser un boleano pero en dado caso arroja la siguiente excepcion 'referenced before assignment'
@@ -46,27 +47,6 @@ estado_inicial = [
     ['G', 'G', 'G', 'G', 'G'],
     ['M', 'G', 'G', 'G', 'G']
 ]
-
-
-class Tablero:
-    """Clase que nos permite representar abstractamente un tablero"""
-
-    def __init__(self, estado, mosqueteros, guardianes):
-        self.estado = estado
-        self.mosquetero = mosqueteros
-        self.guardianes = guardianes
-
-    def mover_pieza(self, origen, destino, maxmin):
-        if maxmin:
-            self.estado[origen[0]][origen[1]] = ' '
-            self.estado[destino[0]][destino[1]] = 'M'
-        else:
-            self.estado[origen[0]][origen[1]] = ' '
-            self.estado[destino[0]][destino[1]] = 'G'
-
-
-board = Tablero(estado=estado_inicial, mosqueteros=[
-                (0, 4), (2, 2), (4, 0)], guardianes=[])
 
 
 class Box (tk.Label):
@@ -97,8 +77,8 @@ class Box (tk.Label):
         global PIECE_CLICKED
         PIECE_CLICKED = self.cordenadas
         if self.piece_contained == -1 and not ID_JUGADOR_JUGANDO[0]:
-            siguienteTurno(board, boxesMatrix, piecesMatrix,
-                           ID_JUGADOR_JUGANDO, PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
+            siguienteTurno(estado_inicial, boxesMatrix, piecesMatrix,
+                           ID_JUGADOR_JUGANDO, PIECE_CLICKED, POSIBLES_MOVIMIENTOS, NUMBER_OF_HUMAN_PLAYERS)
         else:
             print("No hay ficha para comer")
 
@@ -116,8 +96,8 @@ class Piece(tk.Label):
 
         PIECE_CLICKED = self.cordenandas
         if self.tipo == ID_JUGADOR_JUGANDO[0] or self.cordenandas in POSIBLES_MOVIMIENTOS:
-            siguienteTurno(board, boxesMatrix, piecesMatrix, ID_JUGADOR_JUGANDO,
-                           PIECE_CLICKED, POSIBLES_MOVIMIENTOS)
+            siguienteTurno(estado_inicial, boxesMatrix, piecesMatrix, ID_JUGADOR_JUGANDO,
+                           PIECE_CLICKED, POSIBLES_MOVIMIENTOS, NUMBER_OF_HUMAN_PLAYERS)
 
     def comerPieza(self, cordenada):
         """Acción de los mosqueteros"""

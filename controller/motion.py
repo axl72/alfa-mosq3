@@ -1,4 +1,7 @@
+from audioop import minmax
 from controller.util import *
+from copy import deepcopy
+from controller.minimax import *
 
 clickBoxColourList = {'gold': 'khaki', 'darkred': 'darkmagenta'}
 boxColourList = ('gold', 'darkred')
@@ -23,48 +26,94 @@ def pintarTablero(boxesMatrix, piecesMatrix, cordenadas, color=None):
             boxesMatrix[x][y].config(bg=color)
 
 
-def siguienteTurno(tablero, boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas, preseleccion):
+def siguienteTurno(tablero, boxesMatrix, piecesMatrix, juega_mosquetero, cordenadas, preseleccion, cant_judadores):
     # Si ya hemos elegido la ficha a mover y luego elegimos un movimiento valido
+
     global PIECE_CLICKED
-    if cordenadas in preseleccion:
-        x, y = PIECE_CLICKED
-        cordenadas
-        if juega_mosquetero[0]:
-            piecesMatrix[x][y].comerPieza(cordenadas)
-            tablero.mover_pieza(PIECE_CLICKED, cordenadas, juega_mosquetero[0])
-        else:
-            piecesMatrix[x][y].moverPieza(cordenadas)
-            tablero.mover_pieza(PIECE_CLICKED, cordenadas, juega_mosquetero[0])
-        pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
+    if cant_judadores == 2:
+        if cordenadas in preseleccion:
+            x, y = PIECE_CLICKED
+            cordenadas
+            if juega_mosquetero[0]:
+                piecesMatrix[x][y].comerPieza(cordenadas)
+                mover_pieza(tablero,
+                            PIECE_CLICKED, cordenadas, juega_mosquetero[0])
+            else:
+                piecesMatrix[x][y].moverPieza(cordenadas)
+                mover_pieza(tablero,
+                            PIECE_CLICKED, cordenadas, juega_mosquetero[0])
+            pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
 
-        # Esto se puede optimizar
-        while preseleccion != []:
-            preseleccion.pop()
+            # Esto se puede optimizar
+            while preseleccion != []:
+                preseleccion.pop()
 
-        # Dado el error 'referenced before assignment' la linea queda así
-        # Debería ser de esta forma 'return not juega_mosquetero'
-        juega_mosquetero[0] = not juega_mosquetero[0]
+            # Dado el error 'referenced before assignment' la linea queda así
+            # Debería ser de esta forma 'return not juega_mosquetero'
+            juega_mosquetero[0] = not juega_mosquetero[0]
 
-        return
+            return
 
-    cordenadas_posibles = obtenerCordenadasPosibles(
-        tablero.estado, cordenadas, juega_mosquetero[0])
-    if cordenadas_posibles == []:
-        print("No hay jugadas posibles para esta ficha")
-        return
+        cordenadas_posibles = obtenerCordenadasPosibles(
+            tablero, cordenadas, juega_mosquetero[0])
+        if cordenadas_posibles == []:
+            print("No hay jugadas posibles para esta ficha")
+            return
 
-    for z in cordenadas_posibles.copy():
-        preseleccion.append(z)
+        for z in cordenadas_posibles.copy():
+            preseleccion.append(z)
 
-    if preseleccion != []:
-        pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
+        if preseleccion != []:
+            pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
 
-    x, y = cordenadas_posibles[0]
-    color = clickBoxColourList[boxesMatrix[x][y].colour]
-    pintarTablero(boxesMatrix, piecesMatrix,
-                  cordenadas_posibles, color)
+        x, y = cordenadas_posibles[0]
+        color = clickBoxColourList[boxesMatrix[x][y].colour]
+        pintarTablero(boxesMatrix, piecesMatrix,
+                      cordenadas_posibles, color)
 
-    PIECE_CLICKED = cordenadas
+        PIECE_CLICKED = cordenadas
+
+    elif cant_judadores == 1:
+        if cordenadas in preseleccion:
+            x, y = PIECE_CLICKED
+            cordenadas
+            if juega_mosquetero[0]:
+                piecesMatrix[x][y].comerPieza(cordenadas)
+                mover_pieza(tablero,
+                            PIECE_CLICKED, cordenadas, juega_mosquetero[0])
+            else:
+                piecesMatrix[x][y].moverPieza(cordenadas)
+                mover_pieza(tablero,
+                            PIECE_CLICKED, cordenadas, juega_mosquetero[0])
+            pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
+
+            # Esto se puede optimizar
+            while preseleccion != []:
+                preseleccion.pop()
+
+            # Dado el error 'referenced before assignment' la linea queda así
+            # Debería ser de esta forma 'return not juega_mosquetero'
+            print(*encontrarMejorMovimiento(tablero, not juega_mosquetero[0]), sep='\n')
+            return
+
+        cordenadas_posibles = obtenerCordenadasPosibles(
+            tablero, cordenadas, juega_mosquetero[0])
+        if cordenadas_posibles == []:
+            print("No hay jugadas posibles para esta ficha")
+            return
+
+        for z in cordenadas_posibles.copy():
+            preseleccion.append(z)
+
+        if preseleccion != []:
+            pintarTablero(boxesMatrix, piecesMatrix, preseleccion)
+
+        x, y = cordenadas_posibles[0]
+        color = clickBoxColourList[boxesMatrix[x][y].colour]
+        pintarTablero(boxesMatrix, piecesMatrix,
+                      cordenadas_posibles, color)
+
+        PIECE_CLICKED = cordenadas
 
 
 def pieces_movement(matrix):
